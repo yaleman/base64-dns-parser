@@ -2,7 +2,9 @@
 name = "base64-dns-parser"
 version = "0.0.1"
 description = "Decode base64-encoded DNS responses"
-authors = ["James Hodgkinson <james@terminaloutcomes.com>"]
+authors = [
+    "James Hodgkinson <james@terminaloutcomes.com>",
+]
 license = "MIT"
 readme = "README.md"
 
@@ -18,5 +20,17 @@ ruff = "^0.5.0"
 pytest = "^8.2.2"
 
 [build-system]
-requires = ["poetry-core"]
+requires = [
+    "poetry-core",
+]
 build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "base64-dns-parser"
+description = "Decode base64-encoded DNS responses"
+license = "MIT"
+version = "0.0.1"
+readme = "README.md"
+authors = [
+    { name = "James Hodgkinson", email = "james@terminaloutcomes.com" },
+]
