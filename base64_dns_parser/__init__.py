@@ -1,8 +1,9 @@
 import base64
 import struct
+from typing import Any, Dict, List, Tuple
 
 
-def parse_name(data, offset):
+def parse_name(data: bytes, offset: int) -> Tuple[str, int]:
     names = []
     idx = offset
     while True:
@@ -20,16 +21,16 @@ def parse_name(data, offset):
     return ".".join(names), idx
 
 
-def parse_answer(data, offset):
+def parse_answer(data: bytes, offset: int) -> Tuple[Dict[str, Any], int]:
     name, idx = parse_name(data, offset)
     if idx + 10 > len(data):
-        return "Malformed DNS response: not enough data for answer", idx
+        raise ValueError("Malformed DNS response: not enough data for answer")
 
     (atype, aclass, ttl, rdlength) = struct.unpack(">HHIH", data[idx : idx + 10])
     idx += 10
 
     if idx + rdlength > len(data):
-        return "Malformed DNS response: RDATA extends beyond packet", idx
+        raise ValueError("Malformed DNS response: RDATA extends beyond packet")
 
     if atype == 1:  # A Record
         rdata = ".".join(map(str, struct.unpack("BBBB", data[idx : idx + 4])))
@@ -50,14 +51,16 @@ def parse_answer(data, offset):
     }, idx
 
 
-def decode_dns_response(encoded_response):
+def decode_dns_response(
+    encoded_response: str,
+) -> Dict[str, int | str | List[Dict[str, Any]]]:
     while len(encoded_response) % 4 != 0:
         encoded_response += "="
 
     decoded_bytes = base64.b64decode(encoded_response)
 
     if len(decoded_bytes) < 12:
-        return "Decoded data too short to be a valid DNS response"
+        raise ValueError("Decoded data too short to be a valid DNS response")
 
     # Parse basic DNS header
     (id, flags, qdcount, ancount, nscount, arcount) = struct.unpack(
@@ -68,7 +71,9 @@ def decode_dns_response(encoded_response):
     qname, idx = parse_name(decoded_bytes, 12)
 
     if idx + 4 > len(decoded_bytes):
-        return "Malformed DNS response: not enough data for question type and class"
+        raise ValueError(
+            "Malformed DNS response: not enough data for question type and class"
+        )
 
     (qtype, qclass) = struct.unpack(">HH", decoded_bytes[idx : idx + 4])
     idx += 4
