@@ -15,7 +15,7 @@ base64-dns-parser = "base64_dns_parser.__main__:main"
 python = "^3.11"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.16.1"
+mypy = "^1.17.0"
 ruff = "^0.12.3"
 pytest = "^8.4.1"
 
