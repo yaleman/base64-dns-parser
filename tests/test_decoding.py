@@ -1,4 +1,4 @@
-from base64_dns_parser import decode_dns_response
+from base64_dns_parser import decode_dns_response, Response
 
 
 def test_decoding() -> None:
@@ -6,7 +6,7 @@ def test_decoding() -> None:
     # Base64-encoded DNS response
     encoded_response = "DAWBgAABAAYAAAAAB2dzcC1zc2wCbHMFYXBwbGUDY29tAAABAAHADAAFAAEAAA4MACEHZ3NwLXNzbAhscy1hcHBsZQNjb20GYWthZG5zA25ldADAMgAFAAEAAAAaABEOZ3NwLXNzbC1nZW9tYXDAOsBfAAUAAQAAADgACwhnc3B4LXNzbMAUwHwABQABAAAODAATBmdldC1ieAFnB2FhcGxpbWfAHcCTAAEAAQAAABoABBH9Q8bAkwABAAEAAAAaAAQR"
 
-    expected_result = {
+    expected_result = Response.model_validate({
         "id": 3077,
         "flags": "8180",
         "questions": 1,
@@ -52,13 +52,14 @@ def test_decoding() -> None:
                 "rdlength": 4,
                 "rdata": "17.253.67.198",
             },
-            "Malformed DNS response: RDATA extends beyond packet",
+
         ],
         "authority_rrs": 0,
         "additional_rrs": 0,
         "qtype": 1,
         "qclass": 1,
         "qname": "gsp-ssl.ls.apple.com",
-    }
+        "errors": ["Malformed DNS response: RDATA extends beyond packet"]
+    })
 
     assert decode_dns_response(encoded_response) == expected_result
