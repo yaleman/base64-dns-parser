@@ -23,7 +23,7 @@ def main() -> None:
         if "--expand" in sys.argv:
             print("Expanding results", file=sys.stderr)
 
-            answerdetail = result.get("answerdetail", [])
+            answerdetail = result.answerdetail
             if isinstance(answerdetail, int):
                 raise ValueError("answerdetail is an int, not a list")
             if len(answerdetail) == 0:
@@ -32,7 +32,7 @@ def main() -> None:
             else:
                 for answer in answerdetail:
                     extended_result = result.copy()
-                    extended_result["answerdetail"] = answer  # type: ignore[assignment]
+                    extended_result.answerdetail.append(answer)
                     print(json.dumps(extended_result))
         else:
             print(json.dumps(result))

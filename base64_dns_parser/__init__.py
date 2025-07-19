@@ -2,6 +2,30 @@ import base64
 import struct
 from typing import Any, Dict, List, Tuple
 
+from pydantic import BaseModel, Field
+
+class Answer(BaseModel):
+    name: str
+    record_type: int = Field(alias="type")
+    record_class: int = Field(alias="class")
+    ttl: int
+    rdlength: int
+    rdata: str
+
+class Response(BaseModel):
+    response_id: int = Field(alias="id")
+    flags: str
+    questions: int
+    answers: int
+    answerdetail: List[Answer]
+    authority_rrs: int
+    additional_rrs: int
+    qtype: int
+    qclass: int
+    qname: str
+
+    errors: List[str]
+
 
 def parse_name(data: bytes, offset: int) -> Tuple[str, int]:
     names = []
@@ -21,7 +45,7 @@ def parse_name(data: bytes, offset: int) -> Tuple[str, int]:
     return ".".join(names), idx
 
 
-def parse_answer(data: bytes, offset: int) -> Tuple[Dict[str, Any], int]:
+def parse_answer(data: bytes, offset: int) -> Tuple[Answer, int]:
     name, idx = parse_name(data, offset)
     if idx + 10 > len(data):
         raise ValueError("Malformed DNS response: not enough data for answer")
@@ -41,19 +65,19 @@ def parse_answer(data: bytes, offset: int) -> Tuple[Dict[str, Any], int]:
 
     idx += rdlength
 
-    return {
+    return Answer.model_validate({
         "name": name,
         "type": atype,
         "class": aclass,
         "ttl": ttl,
         "rdlength": rdlength,
         "rdata": rdata,
-    }, idx
+    }), idx
 
 
 def decode_dns_response(
     encoded_response: str,
-) -> Dict[str, int | str | List[Dict[str, Any]]]:
+) -> Response:
     while len(encoded_response) % 4 != 0:
         encoded_response += "="
 
@@ -79,11 +103,16 @@ def decode_dns_response(
     idx += 4
 
     answers = []
+    errors = list()
     for _ in range(ancount):
-        answer, idx = parse_answer(decoded_bytes, idx)
-        answers.append(answer)
+        try:
+            answer, idx = parse_answer(decoded_bytes, idx)
+            answers.append(answer)
+        except ValueError as e:
+            errors.append(str(e))
+            break
 
-    result = {
+    result = Response.model_validate({
         "id": id,
         "flags": f"{flags:04x}",
         "questions": qdcount,
@@ -94,6 +123,7 @@ def decode_dns_response(
         "qtype": qtype,
         "qclass": qclass,
         "qname": qname,
-    }
+        "errors": errors,
+    })
 
     return result
