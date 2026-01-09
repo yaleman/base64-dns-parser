@@ -15,7 +15,7 @@ pydantic = "^2.12.5"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.19.1"
-ruff = "^0.14.10"
+ruff = "^0.14.11"
 pytest = "^9.0.2"
 
 [build-system]
