@@ -2,7 +2,7 @@ import binascii
 import json
 import sys
 
-from . import decode_dns_response
+from . import decode_dns_response, Response
 
 
 def main() -> None:
@@ -31,9 +31,9 @@ def main() -> None:
                 print(json.dumps(result))
             else:
                 for answer in answerdetail:
-                    extended_result = result.copy()
-                    extended_result.answerdetail.append(answer)
-                    print(json.dumps(extended_result))
+                    extended_result: Response = result.model_copy()
+                    # extended_result.answerdetail.append(answer)
+                    print(extended_result.model_dump_json())
         else:
             print(json.dumps(result))
 
